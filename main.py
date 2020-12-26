@@ -6,6 +6,7 @@ import scipy.spatial as ss
 IMG_WIDTH = 1920
 IMG_HEIGHT = 1080
 POINT_SIZE = 2
+POINT_COUNT = 100
 POINT_COLOR = "red"
 LINE_COLOR = "white"
 
@@ -124,7 +125,7 @@ def main():
     canvas = MyCanvas(root, width=IMG_WIDTH, height=IMG_HEIGHT, borderwidth=0, highlightthickness=0, background="black")
     canvas.grid()
 
-    graph = Graph.scatter(IMG_WIDTH, IMG_HEIGHT, 100)
+    graph = Graph.scatter(IMG_WIDTH, IMG_HEIGHT, POINT_COUNT)
     graph.fill_triangles()
 
     graph.draw(canvas)
