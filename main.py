@@ -5,6 +5,8 @@ import scipy.spatial as ss
 
 IMG_WIDTH = 1920
 IMG_HEIGHT = 1080
+POINT_COLOR = "red"
+LINE_COLOR = "white"
 
 
 class Point:
@@ -67,11 +69,11 @@ class MyCanvas(tk.Canvas):
         return self.create_oval(x - r, y - r, x + r, y + r, **kwargs)
 
     def create_point(self, p: Point) -> None:
-        self.create_circle(p.x, p.y, p.r, fill="red", width=0)
+        self.create_circle(p.x, p.y, p.r, fill=POINT_COLOR, width=0)
 
     def create_edge(self, e: (Point, Point)) -> None:
         p1, p2 = e
-        self.create_line(p1.x, p1.y, p2.x, p2.y, fill="white")
+        self.create_line(p1.x, p1.y, p2.x, p2.y, fill=LINE_COLOR)
 
 
 class Graph:
