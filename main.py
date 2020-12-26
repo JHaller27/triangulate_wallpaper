@@ -90,13 +90,13 @@ class Graph:
         return g
 
     def draw(self, c: MyCanvas):
-        # Draw Points
-        for p in self._points:
-            c.create_point(p)
-
         # Draw edges
         for e in self._edges:
             c.create_edge(e)
+
+        # Draw Points
+        for p in self._points:
+            c.create_point(p)
 
     def add_point(self, p: Point):
         self._points.append(p)
