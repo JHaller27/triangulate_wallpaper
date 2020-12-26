@@ -66,6 +66,13 @@ class MyCanvas(tk.Canvas):
     def create_circle(self, x, y, r, **kwargs):
         return self.create_oval(x - r, y - r, x + r, y + r, **kwargs)
 
+    def create_point(self, p: Point) -> None:
+        self.create_circle(p.x, p.y, p.r, fill="red", width=0)
+
+    def create_edge(self, e: (Point, Point)) -> None:
+        p1, p2 = e
+        self.create_line(p1.x, p1.y, p2.x, p2.y, fill="white")
+
 
 class Graph:
     def __init__(self):
@@ -87,12 +94,11 @@ class Graph:
     def draw(self, c: MyCanvas):
         # Draw Points
         for p in self._points:
-            c.create_circle(p.x, p.y, p.r, fill="red", width=0)
+            c.create_point(p)
 
         # Draw edges
         for e in self._edges:
-            p1, p2 = e
-            c.create_line(p1.x, p1.y, p2.x, p2.y, fill="white")
+            c.create_edge(e)
 
     def add_point(self, p: Point):
         self._points.append(p)
