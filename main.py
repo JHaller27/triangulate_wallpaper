@@ -125,7 +125,7 @@ def main():
 
     graph.draw(canvas)
 
-    root.wm_title("Circles and Arcs")
+    root.wm_title("Delaunay Triangles")
     root.mainloop()
 
 
