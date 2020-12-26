@@ -5,6 +5,7 @@ import scipy.spatial as ss
 
 IMG_WIDTH = 1920
 IMG_HEIGHT = 1080
+POINT_SIZE = 2
 POINT_COLOR = "red"
 LINE_COLOR = "white"
 
@@ -12,7 +13,6 @@ LINE_COLOR = "white"
 class Point:
     _x: int
     _y: int
-    RADIUS = 2
 
     def __init__(self, x: int, y: int):
         self._x = x
@@ -32,8 +32,8 @@ class Point:
 
     @classmethod
     def random(cls, max_width: int, max_height: int):
-        x = random.randint(0 + Point.RADIUS, max_width - Point.RADIUS)
-        y = random.randint(0 + Point.RADIUS, max_height - Point.RADIUS)
+        x = random.randint(0 + POINT_SIZE, max_width - POINT_SIZE)
+        y = random.randint(0 + POINT_SIZE, max_height - POINT_SIZE)
 
         return cls(x, y)
 
@@ -44,10 +44,6 @@ class Point:
     @property
     def y(self) -> int:
         return self._y
-
-    @property
-    def r(self) -> int:
-        return Point.RADIUS
 
     def dist_to(self, other: 'Point') -> float:
         return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** .5
@@ -69,7 +65,7 @@ class MyCanvas(tk.Canvas):
         return self.create_oval(x - r, y - r, x + r, y + r, **kwargs)
 
     def create_point(self, p: Point) -> None:
-        self.create_circle(p.x, p.y, p.r, fill=POINT_COLOR, width=0)
+        self.create_circle(p.x, p.y, POINT_SIZE, fill=POINT_COLOR, width=0)
 
     def create_edge(self, e: (Point, Point)) -> None:
         p1, p2 = e
