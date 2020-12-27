@@ -20,13 +20,6 @@ SHOW_POINTS = False
 SAVE = False
 
 
-def random_rgb() -> str:
-    r = random.randint(0, 0xff)
-    g = random.randint(0, 0xff)
-    b = random.randint(0, 0xff)
-
-    return f'#{r:02X}{g:02X}{b:02X}'
-
 
 class Point:
     _x: int
@@ -102,9 +95,28 @@ class Edge:
         return self._p.x, self._p.y, self._q.x, self._q.y
 
 
+class TrianglePainter:
+    def get_color(self, a: Point, b: Point, c: Point) -> str:
+        raise NotImplementedError
+
+
+class RandomPainter(TrianglePainter):
+    def get_color(self, a: Point, b: Point, c: Point) -> str:
+        r = random.randint(0, 0xff)
+        g = random.randint(0, 0xff)
+        b = random.randint(0, 0xff)
+
+        return f'#{r:02X}{g:02X}{b:02X}'
+
+
 class MyCanvas(tk.Canvas):
-    def __init__(self, *args, **kwargs):
+    _triangle_painter: TrianglePainter
+
+    def __init__(self, painter: TrianglePainter, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self._triangle_painter = painter
+
         self._edges = set()
 
     def create_circle(self, x, y, r, **kwargs):
@@ -126,7 +138,7 @@ class MyCanvas(tk.Canvas):
             coords.append(p.x)
             coords.append(p.y)
 
-        self.create_polygon(*coords, fill=random_rgb())
+        self.create_polygon(*coords, fill=self._triangle_painter.get_color(*t))
 
 
 class Graph:
@@ -223,7 +235,8 @@ def save_canvas(c: MyCanvas):
 
 def main():
     root = tk.Tk()
-    canvas = MyCanvas(root, width=IMG_WIDTH, height=IMG_HEIGHT, borderwidth=0, highlightthickness=0, background="black")
+
+    canvas = MyCanvas(RandomPainter(), root, width=IMG_WIDTH, height=IMG_HEIGHT, borderwidth=0, highlightthickness=0, background="black")
     canvas.grid()
 
     graph = Graph.scatter(IMG_WIDTH, IMG_HEIGHT, POINT_COUNT)
