@@ -135,6 +135,12 @@ class Graph:
         e = Edge(p1, p2)
         self._edges.add(e)
 
+    def add_triangle(self, points: list):
+        points_ex = points[1:] + points[:1]
+
+        for p, q in zip(points, points_ex):
+            self.add_edge(p, q)
+
     def fill_triangles(self):
         # Points -> np array
         points = np.array([[p.x, p.y] for p in self._points])
@@ -144,9 +150,8 @@ class Graph:
 
         # Add edges
         for e in edges:
-            a, b, c = [self._points[i] for i in e]
-            for p, q in [(a, b), (b, c), (c, a)]:
-                self.add_edge(p, q)
+            vertices = [self._points[i] for i in e]
+            self.add_triangle(vertices)
 
 
 def main():
