@@ -141,7 +141,7 @@ class Graph:
         for p, q in zip(points, points_ex):
             self.add_edge(p, q)
 
-    def fill_triangles(self):
+    def triangulate(self):
         # Points -> np array
         points = np.array([[p.x, p.y] for p in self._points])
 
@@ -160,7 +160,7 @@ def main():
     canvas.grid()
 
     graph = Graph.scatter(IMG_WIDTH, IMG_HEIGHT, POINT_COUNT)
-    graph.fill_triangles()
+    graph.triangulate()
 
     graph.draw(canvas)
 
