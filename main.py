@@ -1,27 +1,67 @@
+import argparse
 import random
 import tkinter as tk
 import numpy as np
 import scipy.spatial as ss
+import sys
 import io
 from PIL import Image
 
-IMG_WIDTH = 1920
-IMG_HEIGHT = 1080
-MARGIN = 100
+
 POINT_SIZE = 2
-POINT_COUNT = 200
 POINT_COLOR = "red"
 LINE_COLOR = "white"
 CENTROID_COLOR = "green"
 
-SHOW_TRIANGLES = True
-SHOW_CENTROIDS = False
-SHOW_LINES = False
-SHOW_POINTS = False
+RNG: random.Random
+RNG_SEED: int
 
-SAVE = False
 
-COLOR_TEMPLATE_PATH = "data/rainbow_1920x1080.jpg"
+# noinspection PyTypeChecker
+def get_args():
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    def resolution_type(x) -> [int, int]:
+        named_sizes = {
+            '1k': [1024, 768],
+            '2k': [2560, 1440],
+            '4k': [3840, 2160],
+        }
+
+        if x in named_sizes:
+            return named_sizes[x]
+
+        return int(x)
+
+    valid_layers = {'colors', 'centers', 'lines', 'points'}
+
+    def layer(x: str) -> str:
+        if x not in valid_layers:
+            raise argparse.ArgumentError(f"Layer '{x}' is not a valid layer.")
+        return x
+
+    parser.add_argument('template', type=str,
+                        help='Path to template image to retrieve colors from')
+    parser.add_argument('--size', nargs='*', type=resolution_type, default=[1920, 1080],
+                        help='Size of output image (WxH)')
+    parser.add_argument('--margin', type=int, default=20,
+                        help='Size of margin (out of view) within which triangles may be drawn')
+    parser.add_argument('--count', dest='point_count', type=int, default=200,
+                        help='Number of points (triangle vertices) to randomly generate')
+    parser.add_argument('--seed', type=int, default=None,
+                        help='Number to seed generator with')
+    parser.add_argument('--show', dest='layers', nargs='*', type=layer, default=['colors'],
+                        help=f'List of layers to display. Valid options: [{"|".join(valid_layers)}]. '
+                             f'Note: if specified, this overrides - not adds to - the default')
+    parser.add_argument('--save', nargs='?', type=str, default='',
+                        help="Save image to png file. Use '.' to auto-generate a file name (recommended)")
+
+    args = parser.parse_args()
+
+    if isinstance(args.size[0], list):
+        args.size = args.size[0]
+
+    return args
 
 
 class Point:
@@ -45,9 +85,11 @@ class Point:
         return f"({self.x}, {self.y})"
 
     @classmethod
-    def random(cls, max_width: int, max_height: int):
-        x = random.randint(0 + POINT_SIZE - MARGIN, max_width - POINT_SIZE + MARGIN)
-        y = random.randint(0 + POINT_SIZE - MARGIN, max_height - POINT_SIZE + MARGIN)
+    def random(cls, max_width: int, max_height: int, margin: int):
+        global RNG
+
+        x = RNG.randint(0 + POINT_SIZE - margin, max_width - POINT_SIZE + margin)
+        y = RNG.randint(0 + POINT_SIZE - margin, max_height - POINT_SIZE + margin)
 
         return cls(x, y)
 
@@ -99,6 +141,11 @@ class Edge:
 class TrianglePainter:
     def get_color(self, a: Point, b: Point, c: Point) -> str:
         raise NotImplementedError
+
+
+class BlackPainter(TrianglePainter):
+    def get_color(self, a: Point, b: Point, c: Point) -> str:
+        return "black"
 
 
 class RandomPainter(TrianglePainter):
@@ -185,7 +232,7 @@ class Graph:
         self._triangles = list()
 
     @classmethod
-    def scatter(cls, width, height, count):
+    def scatter(cls, width, height, count, margin):
         g = cls()
 
         # Ensure points exist in all 4 corners
@@ -195,33 +242,32 @@ class Graph:
         g.add_point(Point(width, height))
 
         while len(g._points) < count:
-            p = Point.random(width, height)
+            p = Point.random(width, height, margin)
             if p in g._points:
                 continue
             g.add_point(p)
 
         return g
 
-    def draw(self, c: MyCanvas):
+    def draw(self, c: MyCanvas, show_layers: list):
         # Draw triangles
-        if SHOW_TRIANGLES:
-            for t in self._triangles:
-                c.create_triangle(t)
+        for t in self._triangles:
+            c.create_triangle(t)
 
         # Draw centroids
-        if SHOW_CENTROIDS:
+        if 'centers' in show_layers:
             width, height = c.size()
             for t in self._triangles:
                 centroid = find_centroid(t, width, height)
                 c.create_point(centroid, fill=CENTROID_COLOR)
 
         # Draw edges
-        if SHOW_LINES:
+        if 'lines' in show_layers:
             for e in self._edges:
                 c.create_edge(e)
 
         # Draw Points
-        if SHOW_POINTS:
+        if 'points' in show_layers:
             for p in self._points:
                 c.create_point(p)
 
@@ -278,42 +324,63 @@ def find_centroid(vertices: [Point, Point, Point], width: int = None, height: in
     return Point(center_x, center_y)
 
 
-def save_canvas(c: MyCanvas):
-    ps = c.postscript(height=IMG_HEIGHT, width=IMG_WIDTH,
-                      pageheight=IMG_HEIGHT-1, pagewidth=IMG_WIDTH-1,
+def save_canvas(c: MyCanvas, width: int, height: int, path: str):
+    global RNG_SEED
+
+    if path is None or path == '.':
+        path = f"triangles_{width}x{height}_{RNG_SEED}.png"
+
+    ps = c.postscript(height=height, width=width,
+                      pageheight=height - 1, pagewidth=width - 1,
                       colormode="color")
     img = Image.open(io.BytesIO(ps.encode("utf-8")))
     img = img.convert(mode="RGB")
-    img.save(f"triangles_{IMG_WIDTH}x{IMG_HEIGHT}.png", "png")
+    img.save(path, "png")
+    print(f"Image saved to {path}")
 
 
 def main():
+    global RNG, RNG_SEED
+
+    args = get_args()
+    img_width, img_height = args.size
+
+    if args.seed is None:
+        RNG_SEED = random.randrange(sys.maxsize)
+    else:
+        RNG_SEED = args.seed
+    print(f"Seed {RNG_SEED}")
+    RNG = random.Random(RNG_SEED)
+
     root = tk.Tk()
 
-    title = f"Wallpaper ({IMG_WIDTH}x{IMG_HEIGHT})"
+    title = f"Wallpaper ({img_width}x{img_height})"
 
-    if COLOR_TEMPLATE_PATH is None:
+    if 'colors' not in args.layers:
+        painter = BlackPainter()
+    elif args.template is None:
         painter = RandomPainter()
     else:
-        painter = TemplatePainter(COLOR_TEMPLATE_PATH, IMG_WIDTH, IMG_HEIGHT)
-        title += f"- {COLOR_TEMPLATE_PATH}"
+        painter = TemplatePainter(args.template, img_width, img_height)
+        title += f"- {args.template}"
 
     canvas = MyCanvas(painter, root,
-                      width=IMG_WIDTH, height=IMG_HEIGHT,
+                      width=img_width, height=img_height,
                       borderwidth=0, highlightthickness=0,
                       background="black")
     canvas.grid()
 
-    graph = Graph.scatter(IMG_WIDTH, IMG_HEIGHT, POINT_COUNT)
+    graph = Graph.scatter(img_width, img_height, args.point_count, args.margin)
     graph.triangulate()
 
-    graph.draw(canvas)
+    graph.draw(canvas, args.layers)
 
     root.wm_title(title)
 
-    if SAVE:
-        save_canvas(canvas)
+    if args.save:
+        save_canvas(canvas, img_width, img_height, args.save)
     else:
+        print('Displaying image in window')
         root.mainloop()
 
 
