@@ -139,6 +139,12 @@ class Graph:
     def scatter(cls, width, height, count):
         g = cls()
 
+        # Ensure points exist in all 4 corners
+        g.add_point(Point(0, 0))
+        g.add_point(Point(0, height))
+        g.add_point(Point(width, 0))
+        g.add_point(Point(width, height))
+
         while len(g._points) < count:
             p = Point.random(width, height)
             if p in g._points:
