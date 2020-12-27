@@ -125,7 +125,7 @@ class TemplatePainter(TrianglePainter):
     @property
     def fp(self):
         if self._img is None:
-            self._img = Image.open(self._path).convert("RGB")
+            self._img = Image.open(self._path).convert("RGB").resize((self._img_width, self._img_height))
         return self._img
 
     def _get_pixel(self, x, y) -> (int, int, int):
