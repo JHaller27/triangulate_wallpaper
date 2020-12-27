@@ -59,16 +59,6 @@ class Point:
     def y(self) -> int:
         return self._y
 
-    def dist_to(self, other: 'Point') -> float:
-        return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** .5
-
-    def find_closest(self, others, blacklist: set = None) -> 'Point':
-        if blacklist is None:
-            blacklist = set()
-
-        blacklist.add(self)
-        return min(filter(lambda o: o not in blacklist, others), key=self.dist_to)
-
     def set_coords(self, *, x: int = None, y: int = None) -> 'Point':
         if x is None:
             x = self.x
