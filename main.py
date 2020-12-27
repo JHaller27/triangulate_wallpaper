@@ -12,8 +12,8 @@ POINT_COLOR = "red"
 LINE_COLOR = "white"
 
 SHOW_TRIANGLES = True
-SHOW_LINES = True
-SHOW_POINTS = True
+SHOW_LINES = False
+SHOW_POINTS = False
 
 
 def random_rgb() -> str:
