@@ -2,6 +2,8 @@ import random
 import tkinter as tk
 import numpy as np
 import scipy.spatial as ss
+import io
+from PIL import Image
 
 IMG_WIDTH = 1920
 IMG_HEIGHT = 1080
@@ -19,6 +21,7 @@ SHOW_POINTS = False
 
 SAVE = False
 
+COLOR_TEMPLATE_PATH = "data/rainbow_1920x1080.jpg"
 
 
 class Point:
@@ -105,6 +108,30 @@ class RandomPainter(TrianglePainter):
         r = random.randint(0, 0xff)
         g = random.randint(0, 0xff)
         b = random.randint(0, 0xff)
+
+        return f'#{r:02X}{g:02X}{b:02X}'
+
+
+class TemplatePainter(TrianglePainter):
+    _path: str
+    _img: Image
+
+    def __init__(self, path: str):
+        self._path = path
+        self._img = None
+
+    @property
+    def fp(self):
+        if self._img is None:
+            self._img = Image.open(self._path).convert("RGB")
+        return self._img
+
+    def _get_pixel(self, x, y) -> (int, int, int):
+        return self.fp.getpixel((x, y))
+
+    def get_color(self, a: Point, b: Point, c: Point) -> str:
+        c = find_centroid([a, b, c])
+        r, g, b = self._get_pixel(c.x, c.y)
 
         return f'#{r:02X}{g:02X}{b:02X}'
 
@@ -224,9 +251,6 @@ def find_centroid(vertices: [Point, Point, Point]) -> Point:
 
 
 def save_canvas(c: MyCanvas):
-    import io
-    from PIL import Image
-
     ps = c.postscript(height=IMG_HEIGHT, width=IMG_WIDTH, pageheight=IMG_HEIGHT, pagewidth=IMG_WIDTH, colormode="color")
     img = Image.open(io.BytesIO(ps.encode("utf-8")))
     img = img.convert(mode="RGB")
@@ -236,7 +260,15 @@ def save_canvas(c: MyCanvas):
 def main():
     root = tk.Tk()
 
-    canvas = MyCanvas(RandomPainter(), root, width=IMG_WIDTH, height=IMG_HEIGHT, borderwidth=0, highlightthickness=0, background="black")
+    if COLOR_TEMPLATE_PATH is None:
+        painter = RandomPainter()
+    else:
+        painter = TemplatePainter(COLOR_TEMPLATE_PATH)
+
+    canvas = MyCanvas(painter, root,
+                      width=IMG_WIDTH, height=IMG_HEIGHT,
+                      borderwidth=0, highlightthickness=0,
+                      background="black")
     canvas.grid()
 
     graph = Graph.scatter(IMG_WIDTH, IMG_HEIGHT, POINT_COUNT)
