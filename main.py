@@ -12,6 +12,14 @@ POINT_COLOR = "red"
 LINE_COLOR = "white"
 
 
+def random_rgb() -> str:
+    r = random.randint(0, 0xff)
+    g = random.randint(0, 0xff)
+    b = random.randint(0, 0xff)
+
+    return f'#{r:02X}{g:02X}{b:02X}'
+
+
 class Point:
     _x: int
     _y: int
@@ -101,11 +109,20 @@ class MyCanvas(tk.Canvas):
         x1, y1, x2, y2 = e.coordinates
         self.create_line(x1, y1, x2, y2, fill=LINE_COLOR)
 
+    def create_triangle(self, t: list):
+        coords = []
+        for p in t:
+            coords.append(p.x)
+            coords.append(p.y)
+
+        self.create_polygon(*coords, fill=random_rgb())
+
 
 class Graph:
     def __init__(self):
         self._points = list()
         self._edges = set()
+        self._triangles = list()
 
     @classmethod
     def scatter(cls, width, height, count):
@@ -120,6 +137,10 @@ class Graph:
         return g
 
     def draw(self, c: MyCanvas):
+        # Draw triangles
+        for t in self._triangles:
+            c.create_triangle(t)
+
         # Draw edges
         for e in self._edges:
             c.create_edge(e)
@@ -136,6 +157,8 @@ class Graph:
         self._edges.add(e)
 
     def add_triangle(self, points: list):
+        self._triangles.append(points)
+
         points_ex = points[1:] + points[:1]
 
         for p, q in zip(points, points_ex):
