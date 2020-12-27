@@ -5,6 +5,7 @@ import scipy.spatial as ss
 
 IMG_WIDTH = 1920
 IMG_HEIGHT = 1080
+MARGIN = 100
 POINT_SIZE = 2
 POINT_COUNT = 100
 POINT_COLOR = "red"
@@ -33,8 +34,8 @@ class Point:
 
     @classmethod
     def random(cls, max_width: int, max_height: int):
-        x = random.randint(0 + POINT_SIZE, max_width - POINT_SIZE)
-        y = random.randint(0 + POINT_SIZE, max_height - POINT_SIZE)
+        x = random.randint(0 + POINT_SIZE - MARGIN, max_width - POINT_SIZE + MARGIN)
+        y = random.randint(0 + POINT_SIZE - MARGIN, max_height - POINT_SIZE + MARGIN)
 
         return cls(x, y)
 
