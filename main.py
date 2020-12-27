@@ -2,7 +2,6 @@ import random
 import tkinter as tk
 import numpy as np
 import scipy.spatial as ss
-from PIL import Image
 
 IMG_WIDTH = 1920
 IMG_HEIGHT = 1080
@@ -15,6 +14,8 @@ LINE_COLOR = "white"
 SHOW_TRIANGLES = True
 SHOW_LINES = False
 SHOW_POINTS = False
+
+SAVE = False
 
 
 def random_rgb() -> str:
@@ -186,9 +187,13 @@ class Graph:
 
 
 def save_canvas(c: MyCanvas):
-    c.postscript(file="triangles.eps")
-    img = Image.open("triangles.eps")
-    img.save("triangles.png", "png")
+    import io
+    from PIL import Image
+
+    ps = c.postscript(height=IMG_HEIGHT, width=IMG_WIDTH, pageheight=IMG_HEIGHT, pagewidth=IMG_WIDTH, colormode="color")
+    img = Image.open(io.BytesIO(ps.encode("utf-8")))
+    img = img.convert(mode="RGB")
+    img.save(f"triangles_{IMG_WIDTH}x{IMG_HEIGHT}.png", "png")
 
 
 def main():
@@ -202,9 +207,11 @@ def main():
     graph.draw(canvas)
 
     root.wm_title("Delaunay Triangles")
-    root.mainloop()
 
-    # save_canvas(canvas)
+    if SAVE:
+        save_canvas(canvas)
+    else:
+        root.mainloop()
 
 
 if __name__ == "__main__":
