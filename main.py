@@ -69,6 +69,14 @@ class Point:
         blacklist.add(self)
         return min(filter(lambda o: o not in blacklist, others), key=self.dist_to)
 
+    def set_coords(self, *, x: int = None, y: int = None) -> 'Point':
+        if x is None:
+            x = self.x
+        if y is None:
+            y = self.y
+
+        return Point(x, y)
+
 
 class Edge:
     _p: Point
@@ -115,10 +123,14 @@ class RandomPainter(TrianglePainter):
 class TemplatePainter(TrianglePainter):
     _path: str
     _img: Image
+    _img_width: int
+    _img_height: int
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, width: int, height: int):
         self._path = path
         self._img = None
+        self._img_width = width
+        self._img_height = height
 
     @property
     def fp(self):
@@ -130,13 +142,15 @@ class TemplatePainter(TrianglePainter):
         return self.fp.getpixel((x, y))
 
     def get_color(self, a: Point, b: Point, c: Point) -> str:
-        c = find_centroid([a, b, c])
+        c = find_centroid([a, b, c], self._img_width, self._img_height)
         r, g, b = self._get_pixel(c.x, c.y)
 
         return f'#{r:02X}{g:02X}{b:02X}'
 
 
 class MyCanvas(tk.Canvas):
+    _width: int
+    _height: int
     _triangle_painter: TrianglePainter
 
     def __init__(self, painter: TrianglePainter, *args, **kwargs):
@@ -144,7 +158,13 @@ class MyCanvas(tk.Canvas):
 
         self._triangle_painter = painter
 
+        self._width = kwargs['width']
+        self._height = kwargs['height']
+
         self._edges = set()
+
+    def size(self) -> (int, int):
+        return self._width, self._height
 
     def create_circle(self, x, y, r, **kwargs):
         return self.create_oval(x - r, y - r, x + r, y + r, **kwargs)
@@ -200,8 +220,9 @@ class Graph:
 
         # Draw centroids
         if SHOW_CENTROIDS:
+            width, height = c.size()
             for t in self._triangles:
-                centroid = find_centroid(t)
+                centroid = find_centroid(t, width, height)
                 c.create_point(centroid, fill=CENTROID_COLOR)
 
         # Draw edges
@@ -242,8 +263,25 @@ class Graph:
             self.add_triangle(vertices)
 
 
-def find_centroid(vertices: [Point, Point, Point]) -> Point:
-    a, b, c = vertices
+def find_centroid(vertices: [Point, Point, Point], width: int = None, height: int = None) -> Point:
+    # If width/height are defined, replace out-of-bounds Points with in-bounds
+    def check_bounds(p: Point) -> Point:
+        x = None
+        y = None
+
+        if p.x < 0:
+            x = 0
+        elif p.x >= width:
+            x = width-1
+        if p.y < 0:
+            y = 0
+        elif p.y >= height:
+            y = height-1
+
+        return p.set_coords(x=x, y=y)
+
+    a, b, c = [check_bounds(p) for p in vertices]
+
     center_x = (a.x + b.x + c.x) // 3
     center_y = (a.y + b.y + c.y) // 3
 
@@ -263,7 +301,7 @@ def main():
     if COLOR_TEMPLATE_PATH is None:
         painter = RandomPainter()
     else:
-        painter = TemplatePainter(COLOR_TEMPLATE_PATH)
+        painter = TemplatePainter(COLOR_TEMPLATE_PATH, IMG_WIDTH, IMG_HEIGHT)
 
     canvas = MyCanvas(painter, root,
                       width=IMG_WIDTH, height=IMG_HEIGHT,
