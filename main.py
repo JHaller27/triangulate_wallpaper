@@ -58,6 +58,34 @@ class Point:
         return min(filter(lambda o: o not in blacklist, others), key=self.dist_to)
 
 
+class Edge:
+    _p: Point
+    _q: Point
+
+    def __init__(self, p: Point, q: Point):
+        self._p = p
+        self._q = q
+
+    def __eq__(self, other: 'Edge'):
+        return (self._p == other._p and self._q == other._q) or (self._p == other._q and self._q == other._p)
+
+    def __hash__(self):
+        p = min(self._p, self._q, key=lambda x: x.x)
+        q = max(self._p, self._q, key=lambda x: x.x)
+        return (p, q).__hash__()
+
+    def __repr__(self):
+        return f'<{repr(self._p)}, {repr(self._q)}>'
+
+    @property
+    def points(self) -> (Point, Point):
+        return self._p, self._q
+
+    @property
+    def coordinates(self) -> (int, int, int, int):
+        return self._p.x, self._p.y, self._q.x, self._q.y
+
+
 class MyCanvas(tk.Canvas):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,15 +97,15 @@ class MyCanvas(tk.Canvas):
     def create_point(self, p: Point) -> None:
         self.create_circle(p.x, p.y, POINT_SIZE, fill=POINT_COLOR, width=0)
 
-    def create_edge(self, e: (Point, Point)) -> None:
-        p1, p2 = e
-        self.create_line(p1.x, p1.y, p2.x, p2.y, fill=LINE_COLOR)
+    def create_edge(self, e: Edge) -> None:
+        x1, y1, x2, y2 = e.coordinates
+        self.create_line(x1, y1, x2, y2, fill=LINE_COLOR)
 
 
 class Graph:
     def __init__(self):
         self._points = list()
-        self._edges = list()
+        self._edges = set()
 
     @classmethod
     def scatter(cls, width, height, count):
@@ -104,8 +132,8 @@ class Graph:
         self._points.append(p)
 
     def add_edge(self, p1: Point, p2: Point):
-        self._edges.append((p1, p2))
-        self._edges.append((p2, p1))
+        e = Edge(p1, p2)
+        self._edges.add(e)
 
     def fill_triangles(self):
         # Points -> np array
@@ -118,7 +146,7 @@ class Graph:
         for e in edges:
             a, b, c = [self._points[i] for i in e]
             for p, q in [(a, b), (b, c), (c, a)]:
-                self._edges.append((p, q))
+                self.add_edge(p, q)
 
 
 def main():
