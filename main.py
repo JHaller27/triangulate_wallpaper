@@ -279,7 +279,9 @@ def find_centroid(vertices: [Point, Point, Point], width: int = None, height: in
 
 
 def save_canvas(c: MyCanvas):
-    ps = c.postscript(height=IMG_HEIGHT, width=IMG_WIDTH, pageheight=IMG_HEIGHT, pagewidth=IMG_WIDTH, colormode="color")
+    ps = c.postscript(height=IMG_HEIGHT, width=IMG_WIDTH,
+                      pageheight=IMG_HEIGHT-1, pagewidth=IMG_WIDTH-1,
+                      colormode="color")
     img = Image.open(io.BytesIO(ps.encode("utf-8")))
     img = img.convert(mode="RGB")
     img.save(f"triangles_{IMG_WIDTH}x{IMG_HEIGHT}.png", "png")
