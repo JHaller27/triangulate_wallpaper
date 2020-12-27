@@ -11,6 +11,10 @@ POINT_COUNT = 500
 POINT_COLOR = "red"
 LINE_COLOR = "white"
 
+SHOW_TRIANGLES = True
+SHOW_LINES = True
+SHOW_POINTS = True
+
 
 def random_rgb() -> str:
     r = random.randint(0, 0xff)
@@ -138,16 +142,19 @@ class Graph:
 
     def draw(self, c: MyCanvas):
         # Draw triangles
-        for t in self._triangles:
-            c.create_triangle(t)
+        if SHOW_TRIANGLES:
+            for t in self._triangles:
+                c.create_triangle(t)
 
         # Draw edges
-        for e in self._edges:
-            c.create_edge(e)
+        if SHOW_LINES:
+            for e in self._edges:
+                c.create_edge(e)
 
         # Draw Points
-        for p in self._points:
-            c.create_point(p)
+        if SHOW_POINTS:
+            for p in self._points:
+                c.create_point(p)
 
     def add_point(self, p: Point):
         self._points.append(p)
