@@ -290,10 +290,13 @@ def save_canvas(c: MyCanvas):
 def main():
     root = tk.Tk()
 
+    title = f"Wallpaper ({IMG_WIDTH}x{IMG_HEIGHT})"
+
     if COLOR_TEMPLATE_PATH is None:
         painter = RandomPainter()
     else:
         painter = TemplatePainter(COLOR_TEMPLATE_PATH, IMG_WIDTH, IMG_HEIGHT)
+        title += f"- {COLOR_TEMPLATE_PATH}"
 
     canvas = MyCanvas(painter, root,
                       width=IMG_WIDTH, height=IMG_HEIGHT,
@@ -306,7 +309,7 @@ def main():
 
     graph.draw(canvas)
 
-    root.wm_title("Delaunay Triangles")
+    root.wm_title(title)
 
     if SAVE:
         save_canvas(canvas)
