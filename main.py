@@ -10,8 +10,10 @@ POINT_SIZE = 2
 POINT_COUNT = 200
 POINT_COLOR = "red"
 LINE_COLOR = "white"
+CENTROID_COLOR = "green"
 
 SHOW_TRIANGLES = True
+SHOW_CENTROIDS = True
 SHOW_LINES = False
 SHOW_POINTS = False
 
@@ -108,8 +110,11 @@ class MyCanvas(tk.Canvas):
     def create_circle(self, x, y, r, **kwargs):
         return self.create_oval(x - r, y - r, x + r, y + r, **kwargs)
 
-    def create_point(self, p: Point) -> None:
-        self.create_circle(p.x, p.y, POINT_SIZE, fill=POINT_COLOR, width=0)
+    def create_point(self, p: Point, *, fill=None) -> None:
+        if fill is None:
+            fill = POINT_COLOR
+
+        self.create_circle(p.x, p.y, POINT_SIZE, fill=fill, width=0)
 
     def create_edge(self, e: Edge) -> None:
         x1, y1, x2, y2 = e.coordinates
@@ -148,6 +153,12 @@ class Graph:
             for t in self._triangles:
                 c.create_triangle(t)
 
+        # Draw centroids
+        if SHOW_CENTROIDS:
+            for t in self._triangles:
+                centroid = find_centroid(t)
+                c.create_point(centroid, fill=CENTROID_COLOR)
+
         # Draw edges
         if SHOW_LINES:
             for e in self._edges:
@@ -184,6 +195,14 @@ class Graph:
         for e in edges:
             vertices = [self._points[i] for i in e]
             self.add_triangle(vertices)
+
+
+def find_centroid(vertices: [Point, Point, Point]) -> Point:
+    a, b, c = vertices
+    center_x = (a.x + b.x + c.x) // 3
+    center_y = (a.y + b.y + c.y) // 3
+
+    return Point(center_x, center_y)
 
 
 def save_canvas(c: MyCanvas):
