@@ -2,6 +2,7 @@ import random
 import tkinter as tk
 import numpy as np
 import scipy.spatial as ss
+from PIL import Image
 
 IMG_WIDTH = 1920
 IMG_HEIGHT = 1080
@@ -184,6 +185,12 @@ class Graph:
             self.add_triangle(vertices)
 
 
+def save_canvas(c: MyCanvas):
+    c.postscript(file="triangles.eps")
+    img = Image.open("triangles.eps")
+    img.save("triangles.png", "png")
+
+
 def main():
     root = tk.Tk()
     canvas = MyCanvas(root, width=IMG_WIDTH, height=IMG_HEIGHT, borderwidth=0, highlightthickness=0, background="black")
@@ -196,6 +203,8 @@ def main():
 
     root.wm_title("Delaunay Triangles")
     root.mainloop()
+
+    # save_canvas(canvas)
 
 
 if __name__ == "__main__":
