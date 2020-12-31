@@ -348,6 +348,12 @@ class Graph:
                     g.add_point(Point(x + (d_x // 2), y))
                 row += 1
 
+        # Ensure points exist in all 4 corners
+        g.add_point(Point(0, 0))
+        g.add_point(Point(0, height))
+        g.add_point(Point(width, 0))
+        g.add_point(Point(width, height))
+
         return g
 
     def draw(self, c: MyCanvas, show_layers: list):
