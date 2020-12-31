@@ -5,6 +5,7 @@ import numpy as np
 import scipy.spatial as ss
 import sys
 import io
+from os import path as os_path
 from PIL import Image
 
 
@@ -399,11 +400,14 @@ def find_centroid(vertices: [Point, Point, Point], width: int = None, height: in
     return Point(center_x, center_y)
 
 
+def get_save_path(args) -> str:
+    if args.save == '':
+        return f"triangles_{args.size[0]}x{args.size[1]}_{RNG_SEED}.png"
+    return args.save
+
+
 def save_canvas(c: MyCanvas, width: int, height: int, path: str):
     global RNG_SEED
-
-    if path == '':
-        path = f"triangles_{width}x{height}_{RNG_SEED}.png"
 
     ps = c.postscript(height=height, width=width,
                       pageheight=height - 1, pagewidth=width - 1,
@@ -458,7 +462,8 @@ def main():
     root.wm_title(title)
 
     if args.save is not None:
-        save_canvas(canvas, img_width, img_height, args.save)
+        path = get_save_path(args)
+        save_canvas(canvas, img_width, img_height, path)
     else:
         print('Displaying image in window')
         root.mainloop()
