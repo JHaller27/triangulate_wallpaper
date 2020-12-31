@@ -68,6 +68,13 @@ def get_args():
     if isinstance(args.size[0], list):
         args.size = args.size[0]
 
+    if args.save is None:
+        # This means param list has just `--save`
+        args.save = ''
+    elif args.save == '':
+        # This means param list is missing the save flag
+        args.save = None
+
     if args.noise is not None and len(args.noise) == 0:
         args.noise = [default_noise]
 
@@ -404,7 +411,7 @@ def find_centroid(vertices: [Point, Point, Point], width: int = None, height: in
 def save_canvas(c: MyCanvas, width: int, height: int, path: str):
     global RNG_SEED
 
-    if path is None or path == '.':
+    if path == '':
         path = f"triangles_{width}x{height}_{RNG_SEED}.png"
 
     ps = c.postscript(height=height, width=width,
@@ -461,7 +468,7 @@ def main():
 
     root.wm_title(title)
 
-    if args.save:
+    if args.save is not None:
         save_canvas(canvas, img_width, img_height, args.save)
     else:
         print('Displaying image in window')

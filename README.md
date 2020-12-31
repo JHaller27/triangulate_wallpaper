@@ -92,13 +92,13 @@ This is useful primarily for debugging.
 
 
 ### `--save`
-_Format: `--save PATH`_
+_Format: `--save [PATH]`_
 
 _Default: show in window_
 
 Save the image to a file instead of displaying it to the screen.
 
-To auto-generate a file name, use `--save .`
+To auto-generate a file name, use `--save` but don't specify a filename.
 
 
 ### `--noise`
