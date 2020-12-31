@@ -36,10 +36,9 @@ Optionally, you may instead specify an HTML RGB color preceeded by `#` (e.g. `#0
 This looks best with the `--noise` flag set.
 
 ### `--size`
-_Format: `--size preset | --size width height`_
+_Format: `--size preset` or `--size width height`_
 
 _Default: `1920 1080`_
-
 
 The size of the mosaic. You may specify either a preset - `4k` or `2k` - or a `width` and `height` in pixels.
 
