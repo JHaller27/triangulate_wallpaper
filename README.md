@@ -102,11 +102,20 @@ To auto-generate a file name, use `--save .`
 
 
 ### `--noise`
-_Formate: `--noise`_
+_Format: `--noise [TOLERANCE]` or `--noise [TOLERANCE1 TOLERANCE2]`_
+
+_Default: No noise_
 
 Toggle on auto-generate noise in image.
 
-Randomly raises or lowers the RGB value of each triangle's color by 20 (min 0, max 255).
+Randomly raises or lowers the RGB value of each triangle's color by the tolerance.
+
+If no values are given, the tolerance will be +/- 20.
+
+If a single value is given, the tolerance will be +/- that value.
+
+If multiple values are given, the tolerance will be (min_value, max_value) - i.e. order does not matter;
+positive values denote lightening, negative values denote darkening.
 
 ### Notes
 This requires a source image that the mosaic output is based on.

@@ -33,6 +33,7 @@ def get_args():
 
         return int(x)
 
+    default_noise = 20
     valid_layers = {'colors', 'centers', 'lines', 'points'}
 
     def layer(x: str) -> str:
@@ -55,13 +56,16 @@ def get_args():
                              f'Note: if specified, this overrides - not adds to - the default')
     parser.add_argument('--save', nargs='?', type=str, default='',
                         help="Save image to png file. Use '.' to auto-generate a file name (recommended)")
-    parser.add_argument('--noise', action='store_true',
-                        help="Add noise to the template/source image.")
+    parser.add_argument('--noise', nargs='*', type=int,
+                        help="Add noise to the template/source image, optionally defining a tolerance.")
 
     args = parser.parse_args()
 
     if isinstance(args.size[0], list):
         args.size = args.size[0]
+
+    if args.noise is not None and len(args.noise) == 0:
+        args.noise = [default_noise]
 
     return args
 
@@ -213,11 +217,19 @@ class TemplatePainter(TrianglePainter):
 
 
 class NoisyPainter(TrianglePainter):
-    def __init__(self, base: TrianglePainter):
+    def __init__(self, base: TrianglePainter, tolerance: list):
         self._base = base
 
-        self._rand_min = -20
-        self._rand_max = 20
+        if len(tolerance) == 0:
+            self._rand_min = 0
+            self._rand_max = 0
+        elif len(tolerance) == 1:
+            self._rand_min = -abs(tolerance[0])
+            self._rand_max = abs(tolerance[0])
+        else:
+            tolerance = tolerance[:2]
+            self._rand_min = min(tolerance)
+            self._rand_max = max(tolerance)
 
     def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         pxl = self._base._get_color_tupe(a, b, c)
@@ -409,7 +421,7 @@ def main():
         title += f"- {args.template}"
 
     if args.noise:
-        painter = NoisyPainter(painter)
+        painter = NoisyPainter(painter, args.noise)
 
     canvas = MyCanvas(painter, root,
                       width=img_width, height=img_height,
