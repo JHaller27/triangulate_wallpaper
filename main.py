@@ -375,26 +375,38 @@ class Graph:
 
         return g
 
+    @property
+    def triangles(self) -> list:
+        return self._triangles
+
+    @property
+    def edges(self) -> set:
+        return self._edges
+
+    @property
+    def points(self) -> list:
+        return self._points
+
     def draw(self, c: MosaicCanvas, show_layers: list):
         # Draw triangles
-        for t in self._triangles:
+        for t in self.triangles:
             c.create_triangle(t)
 
         # Draw centroids
         if 'centers' in show_layers:
             width, height = c.size()
-            for t in self._triangles:
+            for t in self.triangles:
                 centroid = find_centroid(t, width, height)
                 c.create_point(centroid, fill=CENTROID_COLOR)
 
         # Draw edges
         if 'lines' in show_layers:
-            for e in self._edges:
+            for e in self.edges:
                 c.create_edge(e)
 
         # Draw Points
         if 'points' in show_layers:
-            for p in self._points:
+            for p in self.points:
                 c.create_point(p)
 
     def add_point(self, p: Point):
