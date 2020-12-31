@@ -21,7 +21,7 @@ _Create a triangle-mosaic desktop wallpaper based on a given image_
  - Windows
    - PowerShell `.\venv\Sripts\Activate.ps1`
    - Cmd `.\venv\Scripts\activate.bat`
- - Linux `./venv/scripts/activate`
+ - Linux `. ./venv/scripts/activate`
 - When done creating mosaics, `deactivate`
 
 ## Usage
