@@ -61,6 +61,13 @@ The number of vertices - and consequently triangles - to generate.
 
 More points equals smaller triangles.
 
+### `--poly`
+_Format: `--poly`__
+
+_Default: Random distribution_
+
+When set, triangles are placed regularly rather than randomly.
+
 ### `--seed`
 _Format: `--seed SEED`_
 

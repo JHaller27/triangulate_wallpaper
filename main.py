@@ -63,6 +63,8 @@ def get_args():
     parser.add_argument('--gauss', nargs='?', type=int, default=0,
                         help="Add gaussian noise to each RGB value individually. "
                              "If no value is defined, or if value is 0, will use default sigma value of 20.")
+    parser.add_argument('--poly', action='store_true',
+                        help='Show regularly-placed triangles instead of random triangles')
 
     args = parser.parse_args()
 
@@ -325,6 +327,29 @@ class Graph:
 
         return g
 
+    @classmethod
+    def poly(cls, width, height, count, margin):
+        w = width + 2 * margin
+        h = height + 2 * margin
+
+        n_x = int((((w * count) / h) + ((w - h) ** 2 / (4 * h ** 2))) ** 0.5 - ((w - h) / (2 * h)))
+        n_y = int(count / n_x)
+
+        d_x = w // n_x
+        d_y = h // n_y
+
+        g = cls()
+        for x in range(-margin, width + margin, d_x):
+            row = 0
+            for y in range(-margin, height + margin, d_y):
+                if row % 2 == 0:
+                    g.add_point(Point(x, y))
+                else:
+                    g.add_point(Point(x + (d_x // 2), y))
+                row += 1
+
+        return g
+
     def draw(self, c: MyCanvas, show_layers: list):
         # Draw triangles
         for t in self._triangles:
@@ -468,7 +493,10 @@ def main():
                       background="black")
     canvas.grid()
 
-    graph = Graph.scatter(img_width, img_height, args.point_count, args.margin)
+    if args.poly:
+        graph = Graph.poly(img_width, img_height, args.point_count, args.margin)
+    else:
+        graph = Graph.scatter(img_width, img_height, args.point_count, args.margin)
     graph.triangulate()
 
     graph.draw(canvas, args.layers)
