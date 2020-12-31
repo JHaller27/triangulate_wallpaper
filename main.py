@@ -55,6 +55,8 @@ def get_args():
                              f'Note: if specified, this overrides - not adds to - the default')
     parser.add_argument('--save', nargs='?', type=str, default='',
                         help="Save image to png file. Use '.' to auto-generate a file name (recommended)")
+    parser.add_argument('--noise', action='store_true',
+                        help="Add noise to the template/source image.")
 
     args = parser.parse_args()
 
@@ -139,22 +141,35 @@ class Edge:
 
 
 class TrianglePainter:
-    def get_color(self, a: Point, b: Point, c: Point) -> str:
+    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         raise NotImplementedError
+
+    def get_color(self, a: Point, b: Point, c: Point) -> str:
+        def validate_color(x: int):
+            if x < 0x0:
+                return 0x0
+            if x > 0xff:
+                return 0xff
+            return x
+        rgb = self._get_color_tupe(a, b, c)
+        rgb = (validate_color(x) for x in rgb)
+        r, g, b = rgb
+
+        return f'#{r:02X}{g:02X}{b:02X}'
 
 
 class BlackPainter(TrianglePainter):
-    def get_color(self, a: Point, b: Point, c: Point) -> str:
-        return "black"
+    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
+        return 0xff, 0xff, 0xff
 
 
 class RandomPainter(TrianglePainter):
-    def get_color(self, a: Point, b: Point, c: Point) -> str:
+    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         r = random.randint(0, 0xff)
         g = random.randint(0, 0xff)
         b = random.randint(0, 0xff)
 
-        return f'#{r:02X}{g:02X}{b:02X}'
+        return r, b, g
 
 
 class TemplatePainter(TrianglePainter):
@@ -178,11 +193,27 @@ class TemplatePainter(TrianglePainter):
     def _get_pixel(self, x, y) -> (int, int, int):
         return self.fp.getpixel((x, y))
 
-    def get_color(self, a: Point, b: Point, c: Point) -> str:
+    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
+
         c = find_centroid([a, b, c], self._img_width, self._img_height)
         r, g, b = self._get_pixel(c.x, c.y)
 
-        return f'#{r:02X}{g:02X}{b:02X}'
+        return r, g, b
+
+
+class NoisyPainter(TrianglePainter):
+    def __init__(self, base: TrianglePainter):
+        self._base = base
+
+        self._rand_min = -20
+        self._rand_max = 20
+
+    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
+        pxl = self._base._get_color_tupe(a, b, c)
+        adjustment = RNG.randint(self._rand_min, self._rand_max)
+        pxl_adjd = (x + adjustment for x in pxl)
+
+        return pxl_adjd
 
 
 class MyCanvas(tk.Canvas):
@@ -363,6 +394,9 @@ def main():
     else:
         painter = TemplatePainter(args.template, img_width, img_height)
         title += f"- {args.template}"
+
+    if args.noise:
+        painter = NoisyPainter(painter)
 
     canvas = MyCanvas(painter, root,
                       width=img_width, height=img_height,
