@@ -117,6 +117,19 @@ If a single value is given, the tolerance will be +/- that value.
 If multiple values are given, the tolerance will be (min_value, max_value) - i.e. order does not matter;
 positive values denote lightening, negative values denote darkening.
 
+
+### `--gauss`
+
+If you're feeling extra, this flag randomly deviates each RGB color individually.
+* mu = the R, G, or B color
+* sigma = 20
+
+This usually looks like `--noise`, but with the color altered instead of lightness,
+giving it a sort of multi-colored crystalline effect.
+
+Note: This can be combined with `--noise`, but noise from `--noise` is always applied after `--gauss`.
+
+
 ### Notes
 This requires a source image that the mosaic output is based on.
 

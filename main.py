@@ -58,6 +58,8 @@ def get_args():
                         help="Save image to png file. Use '.' to auto-generate a file name (recommended)")
     parser.add_argument('--noise', nargs='*', type=int,
                         help="Add noise to the template/source image, optionally defining a tolerance.")
+    parser.add_argument('--gauss', action='store_true',
+                        help="Add gaussian noise to each RGB value individually")
 
     args = parser.parse_args()
 
@@ -235,6 +237,18 @@ class NoisyPainter(TrianglePainter):
         pxl = self._base._get_color_tupe(a, b, c)
         adjustment = RNG.randint(self._rand_min, self._rand_max)
         pxl_adjd = (x + adjustment for x in pxl)
+
+        return pxl_adjd
+
+
+class GaussyPainter(TrianglePainter):
+    def __init__(self, base: TrianglePainter):
+        self._base = base
+        self._sigma = 20
+
+    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
+        pxl = self._base._get_color_tupe(a, b, c)
+        pxl_adjd = (int(RNG.gauss(x, self._sigma)) for x in pxl)
 
         return pxl_adjd
 
@@ -420,6 +434,8 @@ def main():
         painter = TemplatePainter(args.template, img_width, img_height)
         title += f"- {args.template}"
 
+    if args.gauss:
+        painter = GaussyPainter(painter)
     if args.noise:
         painter = NoisyPainter(painter, args.noise)
 
