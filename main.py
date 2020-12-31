@@ -263,7 +263,7 @@ class GaussyPainter(TrianglePainter):
         return pxl_adjd
 
 
-class MyCanvas(tk.Canvas):
+class MosaicCanvas(tk.Canvas):
     _width: int
     _height: int
     _triangle_painter: TrianglePainter
@@ -368,7 +368,7 @@ class Graph:
 
         return g
 
-    def draw(self, c: MyCanvas, show_layers: list):
+    def draw(self, c: MosaicCanvas, show_layers: list):
         # Draw triangles
         for t in self._triangles:
             c.create_triangle(t)
@@ -495,10 +495,10 @@ def main():
     if args.noise:
         painter = NoisyPainter(painter, args.noise)
 
-    canvas = MyCanvas(painter, root,
-                      width=img_width, height=img_height,
-                      borderwidth=0, highlightthickness=0,
-                      background="black")
+    canvas = MosaicCanvas(painter, root,
+                          width=img_width, height=img_height,
+                          borderwidth=0, highlightthickness=0,
+                          background="black")
     canvas.grid()
 
     if args.poly:
