@@ -401,14 +401,28 @@ def find_centroid(vertices: [Point, Point, Point], width: int = None, height: in
 
 
 def get_save_path(args) -> str:
-    if args.save == '':
-        return f"triangles_{args.size[0]}x{args.size[1]}_{RNG_SEED}.png"
-    return args.save
+    def auto_generate_path():
+        if args.template.startswith("#"):
+            start = f"rgb_{args.template[1:]}"
+        else:
+            start = os_path.splitext(os_path.basename(args.template))[0]
+
+        return f"{start}_{args.size[0]}x{args.size[1]}_{RNG_SEED}.png"
+
+    if args.save == "":
+        return auto_generate_path()
+
+    if os_path.isdir(args.save):
+        basename = auto_generate_path()
+        dirpath = args.save
+    else:
+        basename = os_path.basename(args.save)
+        dirpath = os_path.dirname(args.save)
+
+    return os_path.join(dirpath, basename)
 
 
 def save_canvas(c: MyCanvas, width: int, height: int, path: str):
-    global RNG_SEED
-
     ps = c.postscript(height=height, width=width,
                       pageheight=height - 1, pagewidth=width - 1,
                       colormode="color")

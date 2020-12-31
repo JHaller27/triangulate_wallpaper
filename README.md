@@ -98,7 +98,10 @@ _Default: show in window_
 
 Save the image to a file instead of displaying it to the screen.
 
-To auto-generate a file name, use `--save` but don't specify a filename.
+May specify a new file in an existing directory,
+or specify a directory and the file name will be auto-generated.
+
+If no `PATH` is specified, a file name will be auto-generated.
 
 
 ### `--noise`
