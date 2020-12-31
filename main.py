@@ -389,13 +389,13 @@ class Graph:
 
     def draw(self, c: MosaicCanvas, show_layers: list):
         # Draw triangles
+        width, height = c.size()
+        show_centers = 'centers' in show_layers
         for t in self.triangles:
             c.create_triangle(t)
 
-        # Draw centroids
-        if 'centers' in show_layers:
-            width, height = c.size()
-            for t in self.triangles:
+            # Draw centroids
+            if show_centers:
                 centroid = find_centroid(t, width, height)
                 c.create_point(centroid, fill=CENTROID_COLOR)
 
