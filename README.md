@@ -119,15 +119,23 @@ positive values denote lightening, negative values denote darkening.
 
 
 ### `--gauss`
+_Format: `--gauss [SIGMA]`_
+
+_Default: `15`_
 
 If you're feeling extra, this flag randomly deviates each RGB color individually.
-* mu = the R, G, or B color
-* sigma = 20
 
-This usually looks like `--noise`, but with the color altered instead of lightness,
-giving it a sort of multi-colored crystalline effect.
+Play around with the `SIGMA` value to get a feel for how much it changes, and to find something you like.
+
+This usually looks like `--noise`, but with the color altered instead of brightness,
+giving it a sort of multi-colored crystalline effect. Sehr schön!
 
 Note: This can be combined with `--noise`, but noise from `--noise` is always applied after `--gauss`.
+
+This is a serendipitous bug found during development that was refactored into a full feature!
+Normally, a Gaussian distribution would have _mu_ = 0, then use the output as a (+/-) noise tolerance.
+However, the previously-mentioned bug used the R/G/B value as _mu_, and generated a new noise variance for each color.
+While this was not the intention, it was pretty nonetheless, and was deemed "interesting" enough to keep.
 
 
 ### Notes

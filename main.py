@@ -34,6 +34,7 @@ def get_args():
         return int(x)
 
     default_noise = 20
+    default_gauss_sigma = 15
     valid_layers = {'colors', 'centers', 'lines', 'points'}
 
     def layer(x: str) -> str:
@@ -58,8 +59,9 @@ def get_args():
                         help="Save image to png file. Use '.' to auto-generate a file name (recommended)")
     parser.add_argument('--noise', nargs='*', type=int,
                         help="Add noise to the template/source image, optionally defining a tolerance.")
-    parser.add_argument('--gauss', action='store_true',
-                        help="Add gaussian noise to each RGB value individually")
+    parser.add_argument('--gauss', nargs='?', type=int, default=0,
+                        help="Add gaussian noise to each RGB value individually. "
+                             "If no value is defined, or if value is 0, will use default sigma value of 20.")
 
     args = parser.parse_args()
 
@@ -68,6 +70,13 @@ def get_args():
 
     if args.noise is not None and len(args.noise) == 0:
         args.noise = [default_noise]
+
+    if args.gauss is None:
+        # This means param list has just `--gauss`
+        args.gauss = default_gauss_sigma
+    elif args.gauss == 0:
+        # This means param list has `--gauss 0` or is missing the gauss flag
+        args.gauss = None
 
     return args
 
@@ -242,9 +251,9 @@ class NoisyPainter(TrianglePainter):
 
 
 class GaussyPainter(TrianglePainter):
-    def __init__(self, base: TrianglePainter):
+    def __init__(self, base: TrianglePainter, sigma: int):
         self._base = base
-        self._sigma = 20
+        self._sigma = sigma
 
     def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         pxl = self._base._get_color_tupe(a, b, c)
@@ -434,8 +443,8 @@ def main():
         painter = TemplatePainter(args.template, img_width, img_height)
         title += f"- {args.template}"
 
-    if args.gauss:
-        painter = GaussyPainter(painter)
+    if args.gauss is not None:
+        painter = GaussyPainter(painter, args.gauss)
     if args.noise:
         painter = NoisyPainter(painter, args.noise)
 
