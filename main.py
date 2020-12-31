@@ -302,6 +302,18 @@ class MyCanvas(tk.Canvas):
 
         self.create_polygon(*coords, fill=self._triangle_painter.get_color(*t))
 
+    def save_to(self, path: str):
+        width = self._width
+        height = self._height
+
+        ps = self.postscript(height=height, width=width,
+                             pageheight=height - 1, pagewidth=width - 1,
+                             colormode="color")
+        img = Image.open(io.BytesIO(ps.encode("utf-8")))
+        img = img.convert(mode="RGB")
+        img.save(path, "png")
+        print(f"Image saved to {path}")
+
 
 class Graph:
     def __init__(self):
@@ -453,16 +465,6 @@ def get_save_path(args) -> str:
     return os_path.join(dirpath, basename)
 
 
-def save_canvas(c: MyCanvas, width: int, height: int, path: str):
-    ps = c.postscript(height=height, width=width,
-                      pageheight=height - 1, pagewidth=width - 1,
-                      colormode="color")
-    img = Image.open(io.BytesIO(ps.encode("utf-8")))
-    img = img.convert(mode="RGB")
-    img.save(path, "png")
-    print(f"Image saved to {path}")
-
-
 def main():
     global RNG, RNG_SEED
 
@@ -511,7 +513,7 @@ def main():
 
     if args.save is not None:
         path = get_save_path(args)
-        save_canvas(canvas, img_width, img_height, path)
+        canvas.save_to(path)
     else:
         print('Displaying image in window')
         root.mainloop()
