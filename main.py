@@ -196,15 +196,6 @@ class ColorPainter(TrianglePainter):
         return self._tup
 
 
-class RandomPainter(TrianglePainter):
-    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
-        r = random.randint(0, 0xff)
-        g = random.randint(0, 0xff)
-        b = random.randint(0, 0xff)
-
-        return r, b, g
-
-
 class TemplatePainter(TrianglePainter):
     _path: str
     _img: Image
@@ -442,8 +433,6 @@ def main():
 
     if 'colors' not in args.layers:
         painter = ColorPainter()
-    elif args.template is None:
-        painter = RandomPainter()
     elif args.template.startswith('#'):
         painter = ColorPainter(args.template)
     else:
