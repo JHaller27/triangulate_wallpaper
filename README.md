@@ -28,6 +28,13 @@ _Create a triangle-mosaic desktop wallpaper based on a given image_
 
 `python main.py -h|--help` to see usage. Where the README and `--help` conflict, the `--help` is correct.
 
+### `template`
+
+The only required argument is the `template` - a path to the source image to use for choosing colors.
+
+Optionally, you may instead specify an HTML RGB color preceeded by `#` (e.g. `#00f` / `#0000ff` for blue).
+This looks best with the `--noise` flag set.
+
 ### `--size`
 _Format: `--size preset | --size width height`_
 

@@ -158,9 +158,20 @@ class TrianglePainter:
         return f'#{r:02X}{g:02X}{b:02X}'
 
 
-class BlackPainter(TrianglePainter):
+class ColorPainter(TrianglePainter):
+    def __init__(self, color: str = None):
+        r, g, b = 0xff, 0xff, 0xff  # Black
+
+        if color is not None:
+            if len(color) - 1 == 6:
+                r, g, b = (int(color[i:i+2], 16) for i in range(1, len(color), 2))
+            elif len(color) - 1 == 3:
+                r, g, b = (int(c+c, 16) for c in color[1:])
+
+        self._tup = r, g, b
+
     def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
-        return 0xff, 0xff, 0xff
+        return self._tup
 
 
 class RandomPainter(TrianglePainter):
@@ -388,9 +399,11 @@ def main():
     title = f"Wallpaper ({img_width}x{img_height})"
 
     if 'colors' not in args.layers:
-        painter = BlackPainter()
+        painter = ColorPainter()
     elif args.template is None:
         painter = RandomPainter()
+    elif args.template.startswith('#'):
+        painter = ColorPainter(args.template)
     else:
         painter = TemplatePainter(args.template, img_width, img_height)
         title += f"- {args.template}"
