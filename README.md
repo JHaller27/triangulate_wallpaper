@@ -62,7 +62,7 @@ _Default: random_
 
 The value with which to seed the random generator.
 
-Two mosaics given the same canvas size, margins, number of points, and seed are guaranteed to have the same arrangement of triangles.
+Two mosaics given the same canvas size, margins, number of points, noise flag, and seed are guaranteed to have the same arrangement of triangles.
 
 Note that every run will print the seed to the console.
 This means a common workflow is to generate images one after another until you find one you like.
@@ -93,6 +93,14 @@ _Default: show in window_
 Save the image to a file instead of displaying it to the screen.
 
 To auto-generate a file name, use `--save .`
+
+
+### `--noise`
+_Formate: `--noise`_
+
+Toggle on auto-generate noise in image.
+
+Randomly raises or lowers the RGB value of each triangle's color by 20 (min 0, max 255).
 
 ### Notes
 This requires a source image that the mosaic output is based on.
