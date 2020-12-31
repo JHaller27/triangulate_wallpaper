@@ -264,12 +264,15 @@ class GaussyPainter(TrianglePainter):
 
 
 class MosaicCanvas(tk.Canvas):
+    _root: tk.Tk
     _width: int
     _height: int
     _triangle_painter: TrianglePainter
 
     def __init__(self, painter: TrianglePainter, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        self._root = tk.Tk()
+
+        super().__init__(self._root, *args, **kwargs)
 
         self._triangle_painter = painter
 
@@ -277,6 +280,10 @@ class MosaicCanvas(tk.Canvas):
         self._height = kwargs['height']
 
         self._edges = set()
+
+    def display(self, title: str):
+        self._root.wm_title(title)
+        self._root.mainloop()
 
     def size(self) -> (int, int):
         return self._width, self._height
@@ -478,8 +485,6 @@ def main():
     print(f"Seed {RNG_SEED}")
     RNG = random.Random(RNG_SEED)
 
-    root = tk.Tk()
-
     title = f"Wallpaper ({img_width}x{img_height})"
 
     if 'colors' not in args.layers:
@@ -495,7 +500,7 @@ def main():
     if args.noise:
         painter = NoisyPainter(painter, args.noise)
 
-    canvas = MosaicCanvas(painter, root,
+    canvas = MosaicCanvas(painter,
                           width=img_width, height=img_height,
                           borderwidth=0, highlightthickness=0,
                           background="black")
@@ -509,14 +514,12 @@ def main():
 
     graph.draw(canvas, args.layers)
 
-    root.wm_title(title)
-
     if args.save is not None:
         path = get_save_path(args)
         canvas.save_to(path)
     else:
         print('Displaying image in window')
-        root.mainloop()
+        canvas.display(title)
 
 
 if __name__ == "__main__":
