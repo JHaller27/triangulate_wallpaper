@@ -30,6 +30,8 @@ class MosaicCanvas(tk.Canvas):
 
         self._edges = set()
 
+        self.grid()
+
     def display(self, title: str):
         self._root.wm_title(title)
         self._root.mainloop()

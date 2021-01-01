@@ -130,7 +130,6 @@ def main():
                           width=img_width, height=img_height,
                           borderwidth=0, highlightthickness=0,
                           background="black")
-    canvas.grid()
 
     if args.poly:
         graph = PolyGraph(img_width, img_height, args.point_count, args.margin)
