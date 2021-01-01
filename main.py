@@ -5,6 +5,7 @@ import io
 from os import path as os_path
 from PIL import Image
 
+import painters
 from graph import Point, Edge, Graph, PolyGraph, ScatterGraph
 
 
@@ -87,111 +88,13 @@ def get_args():
     return args
 
 
-class TrianglePainter:
-    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
-        raise NotImplementedError
-
-    def get_color(self, a: Point, b: Point, c: Point) -> str:
-        def validate_color(x: int):
-            if x < 0x0:
-                return 0x0
-            if x > 0xff:
-                return 0xff
-            return x
-        rgb = self._get_color_tupe(a, b, c)
-        rgb = (validate_color(x) for x in rgb)
-        r, g, b = rgb
-
-        return f'#{r:02X}{g:02X}{b:02X}'
-
-
-class ColorPainter(TrianglePainter):
-    def __init__(self, color: str = None):
-        r, g, b = 0xff, 0xff, 0xff  # Black
-
-        if color is not None:
-            if len(color) - 1 == 6:
-                r, g, b = (int(color[i:i+2], 16) for i in range(1, len(color), 2))
-            elif len(color) - 1 == 3:
-                r, g, b = (int(c+c, 16) for c in color[1:])
-
-        self._tup = r, g, b
-
-    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
-        return self._tup
-
-
-class TemplatePainter(TrianglePainter):
-    _path: str
-    _img: Image
-    _img_width: int
-    _img_height: int
-
-    def __init__(self, path: str, width: int, height: int):
-        self._path = path
-        self._img = None
-        self._img_width = width
-        self._img_height = height
-
-    @property
-    def fp(self):
-        if self._img is None:
-            self._img = Image.open(self._path).convert("RGB").resize((self._img_width, self._img_height))
-        return self._img
-
-    def _get_pixel(self, x, y) -> (int, int, int):
-        return self.fp.getpixel((x, y))
-
-    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
-
-        c = find_centroid([a, b, c], self._img_width, self._img_height)
-        r, g, b = self._get_pixel(c.x, c.y)
-
-        return r, g, b
-
-
-class NoisyPainter(TrianglePainter):
-    def __init__(self, base: TrianglePainter, tolerance: list):
-        self._base = base
-
-        if len(tolerance) == 0:
-            self._rand_min = 0
-            self._rand_max = 0
-        elif len(tolerance) == 1:
-            self._rand_min = -abs(tolerance[0])
-            self._rand_max = abs(tolerance[0])
-        else:
-            tolerance = tolerance[:2]
-            self._rand_min = min(tolerance)
-            self._rand_max = max(tolerance)
-
-    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
-        pxl = self._base._get_color_tupe(a, b, c)
-        adjustment = mosaic_random.get_random().randint(self._rand_min, self._rand_max)
-        pxl_adjd = (x + adjustment for x in pxl)
-
-        return pxl_adjd
-
-
-class GaussyPainter(TrianglePainter):
-    def __init__(self, base: TrianglePainter, sigma: int):
-        self._base = base
-        self._sigma = sigma
-
-    def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
-        pxl = self._base._get_color_tupe(a, b, c)
-        pxl_adjd = (int(mosaic_random.get_random().gauss(x, self._sigma)) for x in pxl)
-
-        return pxl_adjd
-
-
 class MosaicCanvas(tk.Canvas):
     _root: tk.Tk
     _width: int
     _height: int
-    _triangle_painter: TrianglePainter
+    _triangle_painter: painters.TrianglePainter
 
-    def __init__(self, painter: TrianglePainter, *args, **kwargs):
+    def __init__(self, painter: painters.TrianglePainter, *args, **kwargs):
         self._root = tk.Tk()
 
         super().__init__(self._root, *args, **kwargs)
@@ -238,7 +141,7 @@ class MosaicCanvas(tk.Canvas):
 
             # Draw centroids
             if show_centers:
-                centroid = find_centroid(t, self._width, self._height)
+                centroid = Point.find_centroid(t, self._width, self._height)
                 self.create_point(centroid, fill=CENTROID_COLOR)
 
         # Draw edges
@@ -262,31 +165,6 @@ class MosaicCanvas(tk.Canvas):
         img = img.convert(mode="RGB")
         img.save(path, "png")
         print(f"Image saved to {path}")
-
-
-def find_centroid(vertices: [Point, Point, Point], width: int = None, height: int = None) -> Point:
-    # If width/height are defined, replace out-of-bounds Points with in-bounds
-    def check_bounds(p: Point) -> Point:
-        x = None
-        y = None
-
-        if p.x < 0:
-            x = 0
-        elif p.x >= width:
-            x = width-1
-        if p.y < 0:
-            y = 0
-        elif p.y >= height:
-            y = height-1
-
-        return p.set_coords(x=x, y=y)
-
-    a, b, c = [check_bounds(p) for p in vertices]
-
-    center_x = (a.x + b.x + c.x) // 3
-    center_y = (a.y + b.y + c.y) // 3
-
-    return Point(center_x, center_y)
 
 
 def get_save_path(args) -> str:
@@ -323,17 +201,17 @@ def main():
     title = f"Wallpaper ({img_width}x{img_height})"
 
     if 'colors' not in args.layers:
-        painter = ColorPainter()
+        painter = painters.ColorPainter()
     elif args.template.startswith('#'):
-        painter = ColorPainter(args.template)
+        painter = painters.ColorPainter(args.template)
     else:
-        painter = TemplatePainter(args.template, img_width, img_height)
+        painter = painters.TemplatePainter(args.template, img_width, img_height)
         title += f"- {args.template}"
 
     if args.gauss is not None:
-        painter = GaussyPainter(painter, args.gauss)
+        painter = painters.GaussyPainter(painter, args.gauss)
     if args.noise:
-        painter = NoisyPainter(painter, args.noise)
+        painter = painters.NoisyPainter(painter, args.noise)
 
     canvas = MosaicCanvas(painter,
                           width=img_width, height=img_height,
