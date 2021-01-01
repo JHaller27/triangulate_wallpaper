@@ -7,57 +7,13 @@ from .edge import Edge
 
 
 class Graph:
-    def __init__(self):
+    def __init__(self, points: list):
         self._points = list()
         self._edges = set()
         self._triangles = list()
 
-    @classmethod
-    def scatter(cls, width, height, count, margin):
-        g = cls()
-
-        # Ensure points exist in all 4 corners
-        g.add_point(Point(0, 0))
-        g.add_point(Point(0, height))
-        g.add_point(Point(width, 0))
-        g.add_point(Point(width, height))
-
-        while len(g._points) < count:
-            p = Point.random(width, height, margin)
-            if p in g._points:
-                continue
-            g.add_point(p)
-
-        return g
-
-    @classmethod
-    def poly(cls, width, height, count, margin):
-        w = width + 2 * margin
-        h = height + 2 * margin
-
-        n_x = int((((w * count) / h) + ((w - h) ** 2 / (4 * h ** 2))) ** 0.5 - ((w - h) / (2 * h)))
-        n_y = int(count / n_x)
-
-        d_x = w // n_x
-        d_y = h // n_y
-
-        g = cls()
-        for x in range(-margin, width + margin, d_x):
-            row = 0
-            for y in range(-margin, height + margin, d_y):
-                if row % 2 == 0:
-                    g.add_point(Point(x, y))
-                else:
-                    g.add_point(Point(x + (d_x // 2), y))
-                row += 1
-
-        # Ensure points exist in all 4 corners
-        g.add_point(Point(0, 0))
-        g.add_point(Point(0, height))
-        g.add_point(Point(width, 0))
-        g.add_point(Point(width, height))
-
-        return g
+        for p in points:
+            self.add_point(p)
 
     @property
     def triangles(self) -> list:
@@ -97,3 +53,53 @@ class Graph:
         for e in edges:
             vertices = [self._points[i] for i in e]
             self.add_triangle(vertices)
+
+
+class ScatterGraph(Graph):
+    def __init__(self, width, height, count, margin):
+        points = [
+            # Ensure points exist in all 4 corners
+            Point(0, 0),
+            Point(0, height),
+            Point(width, 0),
+            Point(width, height)
+        ]
+
+        while len(points) < count:
+            p = Point.random(width, height, margin)
+            if p in points:
+                continue
+            points.append(p)
+
+        super().__init__(points)
+
+
+class PolyGraph(Graph):
+    def __init__(self, width, height, count, margin):
+        w = width + 2 * margin
+        h = height + 2 * margin
+
+        n_x = int((((w * count) / h) + ((w - h) ** 2 / (4 * h ** 2))) ** 0.5 - ((w - h) / (2 * h)))
+        n_y = int(count / n_x)
+
+        d_x = w // n_x
+        d_y = h // n_y
+
+        points = []
+
+        for x in range(-margin, width + margin, d_x):
+            row = 0
+            for y in range(-margin, height + margin, d_y):
+                if row % 2 == 0:
+                    points.append(Point(x, y))
+                else:
+                    points.append(Point(x + (d_x // 2), y))
+                row += 1
+
+        # Ensure points exist in all 4 corners
+        points.append(Point(0, 0))
+        points.append(Point(0, height))
+        points.append(Point(width, 0))
+        points.append(Point(width, height))
+
+        super().__init__(points)

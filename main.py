@@ -5,7 +5,7 @@ import io
 from os import path as os_path
 from PIL import Image
 
-from graph import Point, Edge, Graph
+from graph import Point, Edge, Graph, PolyGraph, ScatterGraph
 
 
 POINT_SIZE = 2
@@ -342,9 +342,9 @@ def main():
     canvas.grid()
 
     if args.poly:
-        graph = Graph.poly(img_width, img_height, args.point_count, args.margin)
+        graph = PolyGraph(img_width, img_height, args.point_count, args.margin)
     else:
-        graph = Graph.scatter(img_width, img_height, args.point_count, args.margin)
+        graph = ScatterGraph(img_width, img_height, args.point_count, args.margin)
     graph.triangulate()
 
     canvas.draw_graph(graph, args.layers)
