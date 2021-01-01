@@ -1,12 +1,12 @@
 import argparse
 import random
 import tkinter as tk
-import numpy as np
-import scipy.spatial as ss
 import sys
 import io
 from os import path as os_path
 from PIL import Image
+
+from graph import Point, Edge, Graph
 
 
 POINT_SIZE = 2
@@ -89,80 +89,6 @@ def get_args():
         args.gauss = None
 
     return args
-
-
-class Point:
-    _x: int
-    _y: int
-
-    def __init__(self, x: int, y: int):
-        self._x = x
-        self._y = y
-
-    def __eq__(self, other):
-        if not isinstance(other, Point):
-            return False
-
-        return self.x == other.x and self.y == other.y
-
-    def __hash__(self):
-        return (self.x, self.y).__hash__()
-
-    def __repr__(self) -> str:
-        return f"({self.x}, {self.y})"
-
-    @classmethod
-    def random(cls, max_width: int, max_height: int, margin: int):
-        global RNG
-
-        x = RNG.randint(0 + POINT_SIZE - margin, max_width - POINT_SIZE + margin)
-        y = RNG.randint(0 + POINT_SIZE - margin, max_height - POINT_SIZE + margin)
-
-        return cls(x, y)
-
-    @property
-    def x(self) -> int:
-        return self._x
-
-    @property
-    def y(self) -> int:
-        return self._y
-
-    def set_coords(self, *, x: int = None, y: int = None) -> 'Point':
-        if x is None:
-            x = self.x
-        if y is None:
-            y = self.y
-
-        return Point(x, y)
-
-
-class Edge:
-    _p: Point
-    _q: Point
-
-    def __init__(self, p: Point, q: Point):
-        self._p = p
-        self._q = q
-
-    def __eq__(self, other: 'Edge'):
-        return (self._p == other._p and self._q == other._q) or (self._p == other._q and self._q == other._p)
-
-    def __hash__(self):
-        p = min(self._p, self._q, key=lambda x: x.x)
-        q = max(self._p, self._q, key=lambda x: x.x)
-        return (p, q).__hash__()
-
-    def __repr__(self):
-        return f'<{repr(self._p)}, {repr(self._q)}>'
-
-    @property
-    def points(self) -> (Point, Point):
-        return self._p, self._q
-
-    @property
-    def coordinates(self) -> (int, int, int, int):
-        return self._p.x, self._p.y, self._q.x, self._q.y
 
 
 class TrianglePainter:
@@ -309,6 +235,26 @@ class MosaicCanvas(tk.Canvas):
 
         self.create_polygon(*coords, fill=self._triangle_painter.get_color(*t))
 
+    def draw_graph(self, g: Graph, show_layers: list):
+        show_centers = 'centers' in show_layers
+        for t in g.triangles:
+            self.create_triangle(t)
+
+            # Draw centroids
+            if show_centers:
+                centroid = find_centroid(t, self._width, self._height)
+                self.create_point(centroid, fill=CENTROID_COLOR)
+
+        # Draw edges
+        if 'lines' in show_layers:
+            for e in g.edges:
+                self.create_edge(e)
+
+        # Draw Points
+        if 'points' in show_layers:
+            for p in g.points:
+                self.create_point(p)
+
     def save_to(self, path: str):
         width = self._width
         height = self._height
@@ -320,121 +266,6 @@ class MosaicCanvas(tk.Canvas):
         img = img.convert(mode="RGB")
         img.save(path, "png")
         print(f"Image saved to {path}")
-
-
-class Graph:
-    def __init__(self):
-        self._points = list()
-        self._edges = set()
-        self._triangles = list()
-
-    @classmethod
-    def scatter(cls, width, height, count, margin):
-        g = cls()
-
-        # Ensure points exist in all 4 corners
-        g.add_point(Point(0, 0))
-        g.add_point(Point(0, height))
-        g.add_point(Point(width, 0))
-        g.add_point(Point(width, height))
-
-        while len(g._points) < count:
-            p = Point.random(width, height, margin)
-            if p in g._points:
-                continue
-            g.add_point(p)
-
-        return g
-
-    @classmethod
-    def poly(cls, width, height, count, margin):
-        w = width + 2 * margin
-        h = height + 2 * margin
-
-        n_x = int((((w * count) / h) + ((w - h) ** 2 / (4 * h ** 2))) ** 0.5 - ((w - h) / (2 * h)))
-        n_y = int(count / n_x)
-
-        d_x = w // n_x
-        d_y = h // n_y
-
-        g = cls()
-        for x in range(-margin, width + margin, d_x):
-            row = 0
-            for y in range(-margin, height + margin, d_y):
-                if row % 2 == 0:
-                    g.add_point(Point(x, y))
-                else:
-                    g.add_point(Point(x + (d_x // 2), y))
-                row += 1
-
-        # Ensure points exist in all 4 corners
-        g.add_point(Point(0, 0))
-        g.add_point(Point(0, height))
-        g.add_point(Point(width, 0))
-        g.add_point(Point(width, height))
-
-        return g
-
-    @property
-    def triangles(self) -> list:
-        return self._triangles
-
-    @property
-    def edges(self) -> set:
-        return self._edges
-
-    @property
-    def points(self) -> list:
-        return self._points
-
-    def draw(self, c: MosaicCanvas, show_layers: list):
-        # Draw triangles
-        width, height = c.size()
-        show_centers = 'centers' in show_layers
-        for t in self.triangles:
-            c.create_triangle(t)
-
-            # Draw centroids
-            if show_centers:
-                centroid = find_centroid(t, width, height)
-                c.create_point(centroid, fill=CENTROID_COLOR)
-
-        # Draw edges
-        if 'lines' in show_layers:
-            for e in self.edges:
-                c.create_edge(e)
-
-        # Draw Points
-        if 'points' in show_layers:
-            for p in self.points:
-                c.create_point(p)
-
-    def add_point(self, p: Point):
-        self._points.append(p)
-
-    def add_edge(self, p1: Point, p2: Point):
-        e = Edge(p1, p2)
-        self._edges.add(e)
-
-    def add_triangle(self, points: list):
-        self._triangles.append(points)
-
-        points_ex = points[1:] + points[:1]
-
-        for p, q in zip(points, points_ex):
-            self.add_edge(p, q)
-
-    def triangulate(self):
-        # Points -> np array
-        points = np.array([[p.x, p.y] for p in self._points])
-
-        # Triangulate
-        edges = ss.Delaunay(points).simplices
-
-        # Add edges
-        for e in edges:
-            vertices = [self._points[i] for i in e]
-            self.add_triangle(vertices)
 
 
 def find_centroid(vertices: [Point, Point, Point], width: int = None, height: int = None) -> Point:
@@ -524,7 +355,7 @@ def main():
         graph = Graph.scatter(img_width, img_height, args.point_count, args.margin)
     graph.triangulate()
 
-    graph.draw(canvas, args.layers)
+    canvas.draw_graph(graph, args.layers)
 
     if args.save is not None:
         path = get_save_path(args)
