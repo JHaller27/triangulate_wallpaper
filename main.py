@@ -1,7 +1,6 @@
 import argparse
-import random
+import mosaic_random
 import tkinter as tk
-import sys
 import io
 from os import path as os_path
 from PIL import Image
@@ -13,9 +12,6 @@ POINT_SIZE = 2
 POINT_COLOR = "red"
 LINE_COLOR = "white"
 CENTROID_COLOR = "green"
-
-RNG: random.Random
-RNG_SEED: int
 
 
 # noinspection PyTypeChecker
@@ -171,7 +167,7 @@ class NoisyPainter(TrianglePainter):
 
     def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         pxl = self._base._get_color_tupe(a, b, c)
-        adjustment = RNG.randint(self._rand_min, self._rand_max)
+        adjustment = mosaic_random.get_random().randint(self._rand_min, self._rand_max)
         pxl_adjd = (x + adjustment for x in pxl)
 
         return pxl_adjd
@@ -184,7 +180,7 @@ class GaussyPainter(TrianglePainter):
 
     def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         pxl = self._base._get_color_tupe(a, b, c)
-        pxl_adjd = (int(RNG.gauss(x, self._sigma)) for x in pxl)
+        pxl_adjd = (int(mosaic_random.get_random().gauss(x, self._sigma)) for x in pxl)
 
         return pxl_adjd
 
@@ -300,7 +296,7 @@ def get_save_path(args) -> str:
         else:
             start = os_path.splitext(os_path.basename(args.template))[0]
 
-        return f"{start}_{args.size[0]}x{args.size[1]}_{RNG_SEED}.png"
+        return f"{start}_{args.size[0]}x{args.size[1]}_{mosaic_random.get_seed()}.png"
 
     if args.save == "":
         return auto_generate_path()
@@ -316,17 +312,13 @@ def get_save_path(args) -> str:
 
 
 def main():
-    global RNG, RNG_SEED
-
     args = get_args()
     img_width, img_height = args.size
 
-    if args.seed is None:
-        RNG_SEED = random.randrange(sys.maxsize)
-    else:
-        RNG_SEED = args.seed
-    print(f"Seed {RNG_SEED}")
-    RNG = random.Random(RNG_SEED)
+    if args.seed is not None:
+        mosaic_random.set_seed(args.seed)
+
+    print(f"Seed {mosaic_random.get_seed()}")
 
     title = f"Wallpaper ({img_width}x{img_height})"
 

@@ -1,3 +1,6 @@
+import mosaic_random
+
+
 class Point:
     _x: int
     _y: int
@@ -20,10 +23,8 @@ class Point:
 
     @classmethod
     def random(cls, max_width: int, max_height: int, margin: int):
-        global RNG
-
-        x = RNG.randint(0 - margin, max_width + margin)
-        y = RNG.randint(0 - margin, max_height + margin)
+        x = mosaic_random.get_random().randint(0 - margin, max_width + margin)
+        y = mosaic_random.get_random().randint(0 - margin, max_height + margin)
 
         return cls(x, y)
 
