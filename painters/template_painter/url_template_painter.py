@@ -11,7 +11,6 @@ class UrlTemplatePainter(TemplatePainter):
         super().__init__(width, height)
         self._url = url
 
-    @property
     def _get_new_image(self) -> Image:
         fp = urlopen(self._url)
         return Image.open(fp)
