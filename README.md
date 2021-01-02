@@ -35,6 +35,9 @@ The only required argument is the `template` - a path to the source image to use
 Optionally, you may instead specify an HTML RGB color preceeded by `#` (e.g. `#00f` / `#0000ff` for blue).
 This looks best with the `--noise` flag set.
 
+Optionally, you may instead specify a URL (preceeded by `http`).
+This will download the image (into memory) and use it as the template.
+
 ### `--size`
 _Format: `--size preset` or `--size width height`_
 
@@ -62,7 +65,7 @@ The number of vertices - and consequently triangles - to generate.
 More points equals smaller triangles.
 
 ### `--poly`
-_Format: `--poly`__
+_Format: `--poly`_
 
 _Default: Random distribution_
 
