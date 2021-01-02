@@ -111,15 +111,16 @@ def main():
 
     print(f"Seed {mosaic_random.get_seed()}")
 
-    title = f"Wallpaper ({img_width}x{img_height})"
+    title = f"Wallpaper ({img_width}x{img_height}) - {args.template}"
 
     if 'colors' not in args.layers:
         painter = painters.ColorPainter()
     elif args.template.startswith('#'):
         painter = painters.ColorPainter(args.template)
+    elif args.template.startswith('http'):
+        painter = painters.UrlTemplatePainter(img_width, img_height, args.template)
     else:
         painter = painters.LocalTemplatePainter(img_width, img_height, args.template)
-        title += f"- {args.template}"
 
     if args.gauss is not None:
         painter = painters.GaussyPainter(painter, args.gauss)
