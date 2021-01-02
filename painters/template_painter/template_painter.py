@@ -2,26 +2,27 @@ from PIL import Image
 
 from graph import Point
 
-from .triangle_painter import TrianglePainter
+from painters.triangle_painter import TrianglePainter
 
 
 class TemplatePainter(TrianglePainter):
-    _path: str
     _img: Image
     _img_width: int
     _img_height: int
 
-    def __init__(self, path: str, width: int, height: int):
-        self._path = path
+    def __init__(self, width: int, height: int):
         self._img = None
         self._img_width = width
         self._img_height = height
 
     @property
-    def fp(self):
+    def fp(self) -> Image:
         if self._img is None:
-            self._img = Image.open(self._path).convert("RGB").resize((self._img_width, self._img_height))
+            self._img = self._get_new_image().convert("RGB").resize((self._img_width, self._img_height))
         return self._img
+
+    def _get_new_image(self) -> Image:
+        raise NotImplementedError
 
     def _get_pixel(self, x, y) -> (int, int, int):
         return self.fp.getpixel((x, y))

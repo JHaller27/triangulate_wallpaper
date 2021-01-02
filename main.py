@@ -118,7 +118,7 @@ def main():
     elif args.template.startswith('#'):
         painter = painters.ColorPainter(args.template)
     else:
-        painter = painters.TemplatePainter(args.template, img_width, img_height)
+        painter = painters.LocalTemplatePainter(img_width, img_height, args.template)
         title += f"- {args.template}"
 
     if args.gauss is not None:
