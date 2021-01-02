@@ -18,15 +18,17 @@ class MosaicCanvas(tk.Canvas):
     _height: int
     _triangle_painter: TrianglePainter
 
-    def __init__(self, painter: TrianglePainter, *args, **kwargs):
+    def __init__(self, painter: TrianglePainter, *, width: int, height: int):
         self._root = tk.Tk()
 
-        super().__init__(self._root, *args, **kwargs)
+        super().__init__(self._root, width=width, height=height,
+                         borderwidth=0, highlightthickness=0,
+                         background="black")
 
         self._triangle_painter = painter
 
-        self._width = kwargs['width']
-        self._height = kwargs['height']
+        self._width = width
+        self._height = height
 
         self._edges = set()
 
