@@ -34,6 +34,8 @@ def get_args():
 
     parser.add_argument('template', type=str,
                         help='Path to template image to retrieve colors from')
+    parser.add_argument('--url', action='store_true',
+                        help='Interpret the template as a url')
     parser.add_argument('--size', nargs='*', type=resolution_type, default=[1920, 1080],
                         help='Size of output image (WxH)')
     parser.add_argument('--margin', type=int, default=20,
@@ -115,10 +117,10 @@ def main():
 
     if 'colors' not in args.layers:
         painter = painters.ColorPainter()
+    elif args.url:
+        painter = painters.UrlTemplatePainter(img_width, img_height, args.template)
     elif args.template.startswith('#'):
         painter = painters.ColorPainter(args.template)
-    elif args.template.startswith('http'):
-        painter = painters.UrlTemplatePainter(img_width, img_height, args.template)
     else:
         painter = painters.LocalTemplatePainter(img_width, img_height, args.template)
 
