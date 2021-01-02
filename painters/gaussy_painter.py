@@ -1,5 +1,5 @@
-import mosaic_random
-from graph import Point
+from ..mosaic_random import get_random
+from ..graph import Point
 
 from .triangle_painter import TrianglePainter
 
@@ -11,6 +11,6 @@ class GaussyPainter(TrianglePainter):
 
     def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         pxl = self._base._get_color_tupe(a, b, c)
-        pxl_adjd = (int(mosaic_random.get_random().gauss(x, self._sigma)) for x in pxl)
+        pxl_adjd = (int(get_random().gauss(x, self._sigma)) for x in pxl)
 
         return pxl_adjd

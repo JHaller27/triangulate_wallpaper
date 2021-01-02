@@ -1,5 +1,5 @@
-import mosaic_random
-from graph import Point
+from ..mosaic_random import get_random
+from ..graph import Point
 
 from .triangle_painter import TrianglePainter
 
@@ -21,7 +21,7 @@ class NoisyPainter(TrianglePainter):
 
     def _get_color_tupe(self, a: Point, b: Point, c: Point) -> (int, int, int):
         pxl = self._base._get_color_tupe(a, b, c)
-        adjustment = mosaic_random.get_random().randint(self._rand_min, self._rand_max)
+        adjustment = get_random().randint(self._rand_min, self._rand_max)
         pxl_adjd = (x + adjustment for x in pxl)
 
         return pxl_adjd
