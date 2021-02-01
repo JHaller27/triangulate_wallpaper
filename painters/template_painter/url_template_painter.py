@@ -1,7 +1,7 @@
 from PIL import Image
 from urllib.request import urlopen
 
-from painters.template_painter import TemplatePainter
+from ..template_painter import TemplatePainter
 
 
 class UrlTemplatePainter(TemplatePainter):

@@ -1,8 +1,8 @@
 from PIL import Image
 
-from graph import Point
+from ...graph import Point
 
-from painters.triangle_painter import TrianglePainter
+from ..triangle_painter import TrianglePainter
 
 
 class TemplatePainter(TrianglePainter):
