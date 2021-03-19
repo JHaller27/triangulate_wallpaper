@@ -29,7 +29,7 @@ def get_args():
 
     def layer(x: str) -> str:
         if x not in valid_layers:
-            raise argparse.ArgumentError(f"Layer '{x}' is not a valid layer.")
+            raise argparse.ArgumentError(None, f"Layer '{x}' is not a valid layer.")
         return x
 
     parser.add_argument('template', type=str,
