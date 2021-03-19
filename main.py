@@ -18,8 +18,8 @@ def get_args():
             '4k': [3840, 2160],
         }
 
-        if x in named_sizes:
-            return named_sizes[x]
+        if named_size := named_sizes.get(x):
+            return named_size
 
         return int(x)
 
