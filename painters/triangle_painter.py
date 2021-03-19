@@ -1,4 +1,4 @@
-from ..graph import Point
+from graph import Point
 
 
 class TrianglePainter:

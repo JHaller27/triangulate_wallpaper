@@ -1,4 +1,4 @@
-from ..mosaic_random import get_random
+from mosaic_random import get_random
 
 
 class Point:

@@ -1,5 +1,5 @@
-from ..mosaic_random import get_random
-from ..graph import Point
+from mosaic_random import get_random
+from graph import Point
 
 from .triangle_painter import TrianglePainter
 
