@@ -1,8 +1,8 @@
 import argparse
-import mosaic_random
 from os import path as os_path
 
 import painters
+import mosaic_random
 from graph import PolyGraph, ScatterGraph
 from canvas import MosaicCanvas
 
