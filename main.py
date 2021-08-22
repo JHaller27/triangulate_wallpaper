@@ -11,7 +11,7 @@ from canvas import MosaicCanvas
 def get_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    def resolution_type(x) -> [int, int]:
+    def resolution_type(x: str) -> list[int]:
         named_sizes = {
             '1k': [1024, 768],
             '2k': [2560, 1440],
@@ -21,7 +21,7 @@ def get_args():
         if named_size := named_sizes.get(x):
             return named_size
 
-        return int(x)
+        return [int(x)]
 
     default_noise = 20
     default_gauss_sigma = 15
