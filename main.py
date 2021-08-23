@@ -6,6 +6,9 @@ import mosaic_random
 from graph import PolyGraph, ScatterGraph
 from canvas import MosaicCanvas
 
+from pathlib import Path
+import os
+
 
 app = FastAPI(title="Triangulate Wallpaper")
 
@@ -22,7 +25,9 @@ def wallpaper(color: str, width: int = 1920, height: int = 1080, noise: int = 15
 
     canvas.draw_graph(graph, ['colors'])
 
-    path = f'/tmp/triangles.png'
-    canvas.save_to(path)
+    store_dir = os.environ.get('IMAGE_STORE', '/tmp')
+    store_path = Path(store_dir)
+    path = store_path / 'triangles.png'
+    canvas.save_to(str(path))
 
     return path
