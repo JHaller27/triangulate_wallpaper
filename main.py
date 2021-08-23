@@ -31,3 +31,4 @@ def wallpaper(color: str, width: int = 1920, height: int = 1080, noise: int = 15
     canvas.save_to(str(path))
 
     return path
+
