@@ -38,7 +38,7 @@ class MosaicCanvas(tk.Canvas):
         self._root.wm_title(title)
         self._root.mainloop()
 
-    def size(self) -> (int, int):
+    def size(self) -> tuple[int, int]:
         return self._width, self._height
 
     def create_circle(self, x, y, r, **kwargs):
