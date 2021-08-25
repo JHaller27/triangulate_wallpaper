@@ -2,6 +2,7 @@ import tkinter as tk
 import io
 from PIL import Image
 
+from .interface import ICanvas
 from painters import TrianglePainter
 from graph import Point, Edge, Graph
 
@@ -12,7 +13,7 @@ LINE_COLOR = "white"
 CENTROID_COLOR = "green"
 
 
-class MosaicCanvas(tk.Canvas):
+class MosaicCanvas(ICanvas, tk.Canvas):
     _root: tk.Tk
     _width: int
     _height: int
