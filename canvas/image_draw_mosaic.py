@@ -4,8 +4,6 @@ from painters import TrianglePainter
 
 from PIL import Image, ImageDraw
 
-import sys
-
 
 POINT_SIZE = 2
 POINT_COLOR = "red"
@@ -53,7 +51,7 @@ class ImageDrawMosaicCanvas(ICanvas):
         self._draw.polygon(coords, fill=self._triangle_painter.get_color(*t))
 
     def display(self, title: str):
-        self._image.save(sys.stdout, "png")
+        self._image.show()
 
     def draw_graph(self, g: Graph, show_layers: list):
         show_centers = 'centers' in show_layers
