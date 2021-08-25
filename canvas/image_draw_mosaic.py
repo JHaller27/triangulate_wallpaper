@@ -23,11 +23,19 @@ class ImageDrawMosaicCanvas(ICanvas):
         self._height = height
         self._triangle_painter = painter
 
-        self._image = Image.new('RGB', self.size())
+        self._image = Image.new('RGB', self._size())
         self._draw = ImageDraw.Draw(self._image)
 
-    def size(self) -> tuple[int, int]:
-        return self._width, self._height
+    @property
+    def width(self) -> int:
+        return self._width
+
+    @property
+    def height(self) -> int:
+        return self._height
+
+    def _size(self) -> tuple[int, int]:
+        return self.width, self.height
 
     def create_circle(self, x, y, r, *, fill, width):
         return self._draw.ellipse([x-r, y-r, x+r, y+r], fill=fill, width=width)

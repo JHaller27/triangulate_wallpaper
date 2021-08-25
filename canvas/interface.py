@@ -2,6 +2,14 @@ from graph import Graph
 
 
 class ICanvas:
+    @property
+    def width(self) -> int:
+        raise NotImplementedError
+
+    @property
+    def height(self) -> int:
+        raise NotImplementedError
+
     def display(self, title: str):
         raise NotImplementedError
 

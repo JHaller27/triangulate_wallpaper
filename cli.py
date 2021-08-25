@@ -89,7 +89,7 @@ def get_save_path(args) -> str:
         else:
             start = os_path.splitext(os_path.basename(args.template))[0]
 
-        return f"{start}_{args.size[0]}x{args.size[1]}_{mosaic_random.get_seed()}.png"
+        return f"{start}_{args._size[0]}x{args._size[1]}_{mosaic_random.get_seed()}.png"
 
     if args.save == "":
         return auto_generate_path()
