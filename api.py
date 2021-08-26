@@ -5,8 +5,10 @@ import painters
 from graph import Graph, PolyGraph, ScatterGraph
 from canvas import ICanvas, MosaicCanvas
 
+import random
 from pathlib import Path
 import os
+from typing import Callable, Optional
 
 
 MAX_PIXEL_COUNT = 3840*2160
@@ -15,28 +17,38 @@ MAX_PIXEL_COUNT = 3840*2160
 app = FastAPI(title="Triangulate Wallpaper")
 
 
-def get_color(color: str = None) -> str:
-    if color is not None:
-        return color
+def get_base(url: str = None, color: str = None) -> str:
+    if url is not None:
+        return url
 
-    import random
+    if color is not None:
+        return f'#{color}'
+
     color_values = (random.randrange(0, 0x100) for _ in range(3))
-    color = '{:02x}{:02x}{:02x}'.format(*color_values)
+    color = '#{:02x}{:02x}{:02x}'.format(*color_values)
 
     return color
 
 
-def get_painter(color=Depends(get_color), noise: int = 20) -> painters.TrianglePainter:
-    painter = painters.ColorPainter(f'#{color}')
-    painter = painters.NoisyPainter(painter, [noise])
+def get_noisy_painter(noise: int = 20, gauss: int = None) -> Callable[[painters.TrianglePainter], painters.TrianglePainter]:
+    if gauss is not None:
+        return lambda base: painters.GaussyPainter(base, gauss)
+    if noise is not None:
+        return lambda base: painters.NoisyPainter(base, [noise])
+    return lambda base: base
 
-    return painter
 
+def get_canvas(base=Depends(get_base), noisy_paint_getter=Depends(get_noisy_painter),
+               width: int = 1920, height: int = 1080, count: int = 100) -> ICanvas:
+    if base.startswith('#'):
+        painter = painters.ColorPainter(base)
+    else:
+        painter = painters.UrlTemplatePainter(width, height, base)
+    painter = noisy_paint_getter(painter)
 
-def get_canvas(width: int = 1920, height: int = 1080, painter=Depends(get_painter)) -> ICanvas:
     canvas = MosaicCanvas(painter, width=width, height=height)
 
-    graph = ScatterGraph(canvas.width, canvas.height, count=100, margin=200)
+    graph = ScatterGraph(canvas.width, canvas.height, count=count, margin=200)
     graph.triangulate()
 
     canvas.draw_graph(graph, ['colors'])
