@@ -1,3 +1,4 @@
+import fastapi.exceptions
 from fastapi.responses import FileResponse
 from fastapi import FastAPI, Depends
 
@@ -40,6 +41,10 @@ def get_noisy_painter(noise: int = 20, gauss: int = None) -> Callable[[painters.
 
 def get_canvas(base=Depends(get_base), noisy_paint_getter=Depends(get_noisy_painter),
                width: int = 1920, height: int = 1080, count: int = 100) -> ICanvas:
+    if width * height > MAX_PIXEL_COUNT:
+        raise fastapi.exceptions.HTTPException(status_code=fastapi.status.HTTP_400_BAD_REQUEST,
+                                               detail="Too many pixels! Try a smaller size (maximum of 4k resolution)")
+
     if base.startswith('#'):
         painter = painters.ColorPainter(base)
     else:
